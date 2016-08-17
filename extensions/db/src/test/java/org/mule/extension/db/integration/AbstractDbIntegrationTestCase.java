@@ -14,9 +14,11 @@ import static org.mule.extension.db.integration.TestRecordUtil.assertRecords;
 import org.mule.extension.db.integration.model.AbstractTestDatabase;
 import org.mule.extension.db.integration.model.Field;
 import org.mule.extension.db.integration.model.Record;
-import org.mule.extension.db.internal.DbConnector;
+import org.mule.extension.db.integration.model.derbyutil.DerbyTestStoredProcedure;
 import org.mule.extension.db.internal.domain.connection.DbConnectionProvider;
-import org.mule.functional.junit4.ExtensionFunctionalTestCase;
+import org.mule.functional.junit4.MuleArtifactFunctionalTestCase;
+import org.mule.functional.junit4.runners.ArtifactClassLoaderRunnerConfig;
+import org.mule.functional.junit4.runners.RunnerDelegateTo;
 import org.mule.runtime.extension.api.runtime.ConfigurationProvider;
 
 import java.sql.SQLException;
@@ -27,13 +29,11 @@ import java.util.Map;
 import javax.sql.DataSource;
 
 import org.junit.Before;
-import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 
-//@RunnerDelegateTo(Parameterized.class)
-//@ArtifactClassLoaderRunnerConfig(exportClasses = {DbConnectionProvider.class})
-@RunWith(Parameterized.class)
-public abstract class AbstractDbIntegrationTestCase extends ExtensionFunctionalTestCase {
+@RunnerDelegateTo(Parameterized.class)
+@ArtifactClassLoaderRunnerConfig(exportClasses = {DbConnectionProvider.class, DerbyTestStoredProcedure.class})
+public abstract class AbstractDbIntegrationTestCase extends MuleArtifactFunctionalTestCase {
 
   private final String dataSourceConfigResource;
   protected final AbstractTestDatabase testDatabase;
@@ -48,20 +48,19 @@ public abstract class AbstractDbIntegrationTestCase extends ExtensionFunctionalT
     testDatabase.createDefaultDatabaseConfig(getDefaultDataSource());
   }
 
-  @Override protected Class<?>[] getAnnotatedExtensionClasses() {
-    return new Class<?>[]{DbConnector.class};
+  protected DataSource getDefaultDataSource() {
+    return getDefaultDataSource("dbConfig");
   }
 
-  protected DataSource getDefaultDataSource() {
+  protected DataSource getDefaultDataSource(String configName) {
     try {
-      ConfigurationProvider configurationProvider = muleContext.getRegistry().get("dbConfig");
+      ConfigurationProvider configurationProvider = muleContext.getRegistry().get(configName);
       DbConnectionProvider connectionProvider =
           (DbConnectionProvider) configurationProvider.get(getTestEvent("")).getConnectionProvider().get();
       return connectionProvider.getDataSource();
     } catch (Exception e) {
       throw new RuntimeException(e);
     }
-
   }
 
   @Override

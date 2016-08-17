@@ -29,7 +29,7 @@
                     <dbn:parameters>
                         <!-- Note that parameters are in different order-->
                         <dbn:in-param paramName="name" value="Venus" />
-                        <dbn:in-param paramName="position" value="4" />
+                        <dbn:in-param paramName="position" value="2" />
                     </dbn:parameters>
                 </dbn:parameterized-query>
             </dbn:query>

@@ -5,14 +5,14 @@
       xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
             http://www.mulesoft.org/schema/mule/dbn http://www.mulesoft.org/schema/mule/dbn/current/mule-dbn.xsd">
 
-    <dbn:config name="pooledJdbcConfig">
-        <dbn:derby-connection url="jdbc:derby:muleEmbeddedDB;create=true">
-            <dbn:pooling-profile maxPoolSize="2" minPoolSize="0" maxWait="1" />
-        </dbn:derby-connection>
-        <dbn:custom-data-types>
-            <!-- Derby uses JAVA_OBJECT for UDT-->
-            <dbn:custom-data-type typeName="CONTACT_DETAILS" id="2000"/>
-        </dbn:custom-data-types>
-    </dbn:config>
+    <dbn:parameterized-query name="selectQuery" sql="select * from Planet where name = :name">
+        <dbn:parameters>
+            <dbn:in-param paramName="name" value="#[payload]" type="VARCHAR"/>
+        </dbn:parameters>
+    </dbn:parameterized-query>
+
+    <flow name="selectParameterizedQuery">
+        <dbn:select config-ref="dbConfig" query="selectQuery" />
+    </flow>
 
 </mule>

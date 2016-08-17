@@ -6,6 +6,7 @@
  */
 package org.mule.extension.db.internal.resolver.query;
 
+import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang.StringUtils.isBlank;
@@ -13,6 +14,7 @@ import static org.mule.runtime.core.util.Preconditions.checkArgument;
 import org.mule.extension.db.api.param.InputParameter;
 import org.mule.extension.db.api.param.ParameterizedQueryDefinition;
 import org.mule.extension.db.api.param.QueryDefinition;
+import org.mule.extension.db.api.param.QueryParameter;
 import org.mule.extension.db.internal.DbConnector;
 import org.mule.extension.db.internal.domain.connection.DbConnection;
 import org.mule.extension.db.internal.domain.param.DefaultInOutQueryParam;
@@ -35,34 +37,84 @@ import org.mule.extension.db.internal.parser.QueryTemplateParser;
 import org.mule.extension.db.internal.parser.SimpleQueryTemplateParser;
 import org.mule.extension.db.internal.resolver.param.GenericParamTypeResolverFactory;
 import org.mule.extension.db.internal.resolver.param.ParamTypeResolverFactory;
+import org.mule.runtime.core.api.MuleRuntimeException;
+import org.mule.runtime.core.config.i18n.MessageFactory;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 
 
 public class DefaultQueryResolver implements QueryResolver {
 
   private QueryTemplateParser queryTemplateParser = new SimpleQueryTemplateParser();
+  private Cache<String, QueryTemplate> queryTemplates = CacheBuilder.newBuilder().build();
 
   @Override
   public Query resolve(QueryDefinition queryDefinition, DbConnector connector, DbConnection connection) {
-
     queryDefinition = queryDefinition.resolveFromTemplate();
 
     checkArgument(!isBlank(queryDefinition.getSql()), "sql query cannot be blank");
 
-    QueryTemplate queryTemplate = queryTemplateParser.parse(queryDefinition.getSql());
+    final String sql = queryDefinition.getSql();
+    QueryTemplate queryTemplate = getQueryTemplate(connector, connection, sql);
 
+    return new Query(queryTemplate, resolveParams(queryDefinition, queryTemplate));
+  }
+
+  private List<QueryParamValue> resolveParams(QueryDefinition definition, QueryTemplate template) {
+    if (definition instanceof ParameterizedQueryDefinition) {
+      ParameterizedQueryDefinition queryDefinition = (ParameterizedQueryDefinition) definition;
+      return template.getInputParams().stream()
+          .map(p -> {
+            final String parameterName = p.getName();
+            Optional<QueryParameter> parameterOptional = queryDefinition.getParameter(parameterName);
+
+            if (!parameterOptional.isPresent()) {
+              throw new IllegalArgumentException(
+                                                 format("Parameter '%s' was not bound for query '%s'", parameterName,
+                                                        definition.getSql()));
+            }
+
+            QueryParameter parameter = parameterOptional.get();
+            if (!(parameter instanceof InputParameter)) {
+              throw new IllegalArgumentException(
+                                                 format("Parameter '%s' should be bound to an input parameter on query '%s'",
+                                                        parameterName,
+                                                        definition.getSql()));
+            }
+
+            return new QueryParamValue(parameterName, ((InputParameter) parameter).getValue());
+          })
+          .collect(toList());
+    }
+
+    return ImmutableList.of();
+  }
+
+  private QueryTemplate createQueryTemplate(String sql, DbConnector connector, DbConnection connection) {
+    QueryTemplate queryTemplate = queryTemplateParser.parse(sql);
     if (needsParamTypeResolution(queryTemplate)) {
       Map<Integer, DbType> paramTypes = getParameterTypes(connector, connection, queryTemplate);
       queryTemplate = resolveQueryTemplate(queryTemplate, paramTypes);
     }
 
-    return new Query(queryTemplate, paramValuesFrom(queryDefinition));
+    return queryTemplate;
+  }
+
+  private QueryTemplate getQueryTemplate(DbConnector connector, DbConnection connection, String sql) {
+    try {
+      return queryTemplates.get(sql, () -> createQueryTemplate(sql, connector, connection));
+    } catch (ExecutionException e) {
+      throw new MuleRuntimeException(MessageFactory.createStaticMessage("Could not resolve query: " + sql, e));
+    }
   }
 
   private QueryTemplate resolveQueryTemplate(QueryTemplate queryTemplate, Map<Integer, DbType> paramTypes) {
@@ -117,16 +169,5 @@ public class DefaultQueryResolver implements QueryResolver {
     }
 
     return baseTypeManager;
-  }
-
-  private List<QueryParamValue> paramValuesFrom(QueryDefinition definition) {
-    if (definition instanceof ParameterizedQueryDefinition) {
-      return ((ParameterizedQueryDefinition) definition).getParameters().stream()
-          .filter(p -> p instanceof InputParameter)
-          .map(p -> new QueryParamValue(p.getParamName(), ((InputParameter) p).getValue()))
-          .collect(toList());
-    }
-
-    return ImmutableList.of();
   }
 }

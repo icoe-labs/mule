@@ -6,6 +6,9 @@
  */
 package org.mule.extension.db.internal.operation;
 
+import static java.util.Arrays.asList;
+import static org.mule.extension.db.internal.domain.query.QueryType.SELECT;
+import static org.mule.extension.db.internal.domain.query.QueryType.STORE_PROCEDURE_CALL;
 import static org.mule.runtime.extension.api.introspection.parameter.ExpressionSupport.NOT_SUPPORTED;
 import org.mule.extension.db.api.StatementStreamingResultSetCloser;
 import org.mule.extension.db.api.param.QueryDefinition;
@@ -13,6 +16,9 @@ import org.mule.extension.db.internal.DbConnector;
 import org.mule.extension.db.internal.domain.connection.DbConnection;
 import org.mule.extension.db.internal.domain.executor.SelectExecutor;
 import org.mule.extension.db.internal.domain.metadata.SelectOutputResolver;
+import org.mule.extension.db.internal.domain.query.Query;
+import org.mule.extension.db.internal.domain.query.QueryTemplate;
+import org.mule.extension.db.internal.domain.query.QueryType;
 import org.mule.extension.db.internal.domain.statement.QueryStatementFactory;
 import org.mule.extension.db.internal.resolver.query.DefaultQueryResolver;
 import org.mule.extension.db.internal.resolver.query.QueryResolver;
@@ -29,8 +35,11 @@ import org.mule.runtime.extension.api.annotation.param.UseConfig;
 import org.mule.runtime.extension.api.annotation.param.display.Text;
 import org.mule.runtime.extension.api.runtime.operation.InterceptingCallback;
 
+import com.google.common.base.Joiner;
+
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -66,8 +75,10 @@ public class DmlOperations {
     ResultSetHandler resultSetHandler =
         streaming ? new IteratorResultSetHandler(recordHandler, resultSetCloser) : new ListResultSetHandler(recordHandler);
 
-    Object result = new SelectExecutor(statementFactory, resultSetHandler)
-        .execute(connection, queryResolver.resolve(query, connector, connection));
+    final Query resolvedQuery = queryResolver.resolve(query, connector, connection);
+    validateQueryType(resolvedQuery.getQueryTemplate(), asList(SELECT, STORE_PROCEDURE_CALL));
+
+    Object result = new SelectExecutor(statementFactory, resultSetHandler).execute(connection, resolvedQuery);
 
     return new InterceptingCallback<Object>() {
 
@@ -143,8 +154,8 @@ public class DmlOperations {
    * Updates data in a database.
    *
    * @param sql
-   * @param file         The location of a file to load. The file can point to a resource on the classpath or on a disk.
-   *                     This parameter is mutually exclusive with {@code sql}
+   * @param file     The location of a file to load. The file can point to a resource on the classpath or on a disk.
+   *                 This parameter is mutually exclusive with {@code sql}
    * @param settings
    * @return
    */
@@ -170,5 +181,13 @@ public class DmlOperations {
     statementFactory.setQueryTimeout(new Long(settings.getQueryTimeoutUnit().toSeconds(settings.getQueryTimeout())).intValue());
 
     return statementFactory;
+  }
+
+  private void validateQueryType(QueryTemplate queryTemplate, List<QueryType> validTypes) {
+    if (validTypes == null || !validTypes.contains(queryTemplate.getType())) {
+      throw new IllegalArgumentException(String.format("Query type must be one of [%s] but query '%s' is of type",
+                                                       Joiner.on(", ").join(validTypes), queryTemplate.getSqlText(),
+                                                       queryTemplate.getType()));
+    }
   }
 }

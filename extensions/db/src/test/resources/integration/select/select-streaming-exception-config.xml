@@ -1,28 +1,34 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mule xmlns="http://www.mulesoft.org/schema/mule/core"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-      xmlns:db="http://www.mulesoft.org/schema/mule/db"
+      xmlns:dbn="http://www.mulesoft.org/schema/mule/dbn"
       xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
-            http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+            http://www.mulesoft.org/schema/mule/dbn http://www.mulesoft.org/schema/mule/dbn/current/mule-dbn.xsd">
 
     <flow name="selectStreamingException">
-        <db:select config-ref="pooledJdbcConfig" streaming="true">
-            <db:parameterized-query>select * from NOT_EXISTS order by ID</db:parameterized-query>
-        </db:select>
+        <dbn:select config-ref="pooledJdbcConfig" streaming="true">
+            <dbn:query>
+                <dbn:parameterized-query sql="select * from NOT_EXISTS order by ID" />
+            </dbn:query>
+        </dbn:select>
     </flow>
 
     <flow name="selectExceptionClosesPreviousResultSets">
         <transactional>
-            <db:select config-ref="pooledJdbcConfig" target="#[flowVars.planets]" streaming="true">
-                <db:parameterized-query>select * from PLANET order by ID</db:parameterized-query>
-            </db:select>
-            <db:select config-ref="pooledJdbcConfig">
-                <db:parameterized-query>select * from NOT_EXISTS order by ID</db:parameterized-query>
-            </db:select>
+            <dbn:select config-ref="pooledJdbcConfig" target="planets" streaming="true">
+                <dbn:query>
+                    <dbn:parameterized-query sql="select * from PLANET order by ID"/>
+                </dbn:query>
+            </dbn:select>
+            <dbn:select config-ref="pooledJdbcConfig">
+                <dbn:query>
+                    <dbn:parameterized-query sql="select * from NOT_EXISTS order by ID"/>
+                </dbn:query>
+            </dbn:select>
         </transactional>
         <set-payload value="#[true]"/>
         <catch-exception-strategy>
-            <set-payload value="#[flowVars.planets.hasNext()]"/>
+            <set-payload value="#[planets.payload.hasNext()]"/>
         </catch-exception-strategy>
     </flow>
 </mule>

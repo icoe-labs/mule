@@ -38,6 +38,10 @@
             <artifactId>commons-lang</artifactId>
         </dependency>
         <dependency>
+            <groupId>commons-collections</groupId>
+            <artifactId>commons-collections</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.apache.geronimo.specs</groupId>
             <artifactId>geronimo-jta_1.1_spec</artifactId>
         </dependency>
@@ -96,7 +100,7 @@
             <groupId>org.apache.derby</groupId>
             <artifactId>derby</artifactId>
             <version>${derbyVersion}</version>
-            <!--<scope>test</scope>-->
+            <!-- TODO: MULE-10258 scope should be <scope>test</scope>-->
         </dependency>
 
         <dependency>

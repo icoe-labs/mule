@@ -69,8 +69,4 @@ public abstract class AbstractExecutor {
   private void processOutputParam(CallableStatement statement, int index, DbType type) throws SQLException {
     type.registerOutParameter(statement, index);
   }
-
-  public void setQueryLoggerFactory(QueryLoggerFactory queryLoggerFactory) {
-    this.queryLoggerFactory = queryLoggerFactory;
-  }
 }

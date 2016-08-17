@@ -8,7 +8,7 @@ package org.mule.extension.db.integration.select;
 
 import static org.mule.extension.db.integration.TestRecordUtil.assertMessageContains;
 import static org.mule.extension.db.integration.TestRecordUtil.getMarsRecord;
-import static org.mule.extension.db.integration.TestRecordUtil.getVenusRecord;
+import static org.mule.extension.db.integration.model.Planet.MARS;
 import org.mule.extension.db.integration.AbstractDbIntegrationTestCase;
 import org.mule.extension.db.integration.TestDbConfig;
 import org.mule.extension.db.integration.model.AbstractTestDatabase;
@@ -19,9 +19,9 @@ import java.util.List;
 import org.junit.Test;
 import org.junit.runners.Parameterized;
 
-public class SelectNameParamOverrideTestCase extends AbstractDbIntegrationTestCase {
+public class SelectTemplateWithTypedParamTestCase extends AbstractDbIntegrationTestCase {
 
-  public SelectNameParamOverrideTestCase(String dataSourceConfigResource, AbstractTestDatabase testDatabase) {
+  public SelectTemplateWithTypedParamTestCase(String dataSourceConfigResource, AbstractTestDatabase testDatabase) {
     super(dataSourceConfigResource, testDatabase);
   }
 
@@ -32,18 +32,12 @@ public class SelectNameParamOverrideTestCase extends AbstractDbIntegrationTestCa
 
   @Override
   protected String[] getFlowConfigurationResources() {
-    return new String[] {"integration/select/select-name-param-override-config.xml"};
+    return new String[] {"integration/select/select-template-with-typed-parameter-config.xml"};
   }
 
   @Test
-  public void usesParamOverriddenByName() throws Exception {
-    MuleMessage response = flowRunner("overriddenParamsByName").run().getMessage();
+  public void selectParameterizedQuery() throws Exception {
+    MuleMessage response = flowRunner("selectParameterizedQuery").withPayload(MARS.getName()).run().getMessage();
     assertMessageContains(response, getMarsRecord());
-  }
-
-  @Test
-  public void usesInlineParamOverriddenByName() throws Exception {
-    MuleMessage response = flowRunner("inlineOverriddenParamsByName").run().getMessage();
-    assertMessageContains(response, getVenusRecord());
   }
 }

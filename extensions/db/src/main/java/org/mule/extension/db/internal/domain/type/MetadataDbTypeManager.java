@@ -7,6 +7,9 @@
 
 package org.mule.extension.db.internal.domain.type;
 
+import static org.mule.extension.db.api.param.JdbcType.ARRAY;
+import static org.mule.extension.db.api.param.JdbcType.DISTINCT;
+import static org.mule.extension.db.api.param.JdbcType.STRUCT;
 import org.mule.extension.db.internal.domain.connection.DbConnection;
 import org.mule.extension.db.internal.result.resultset.ResultSetIterator;
 import org.mule.extension.db.internal.result.resultset.SingleResultResultSetCloser;
@@ -107,9 +110,9 @@ public class MetadataDbTypeManager implements DbTypeManager {
    * We assume that ARRAY is behaving the same as STRUCT and DISTINCT in this aspect.
    */
   private boolean isUserDefinedType(DbType dbType) {
-    return isTypeDerivedFrom(dbType, JdbcType.STRUCT_DB_TYPE.getDbType()) ||
-        isTypeDerivedFrom(dbType, JdbcType.DISTINCT_DB_TYPE.getDbType()) ||
-        isTypeDerivedFrom(dbType, JdbcType.ARRAY_DB_TYPE.getDbType());
+    return isTypeDerivedFrom(dbType, STRUCT.getDbType()) ||
+        isTypeDerivedFrom(dbType, DISTINCT.getDbType()) ||
+        isTypeDerivedFrom(dbType, ARRAY.getDbType());
   }
 
   private boolean isTypeDerivedFrom(DbType type, DbType baseType) {

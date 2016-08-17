@@ -6,7 +6,6 @@
  */
 package org.mule.extension.db.api.param;
 
-import org.mule.extension.db.internal.domain.type.JdbcType;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 

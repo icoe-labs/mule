@@ -21,7 +21,7 @@ import org.mule.extension.db.internal.domain.type.ArrayResolvedDbType;
 import org.mule.extension.db.internal.domain.type.CompositeDbTypeManager;
 import org.mule.extension.db.internal.domain.type.DbType;
 import org.mule.extension.db.internal.domain.type.DbTypeManager;
-import org.mule.extension.db.internal.domain.type.JdbcType;
+import org.mule.extension.db.api.param.JdbcType;
 import org.mule.extension.db.internal.domain.type.MappedStructResolvedDbType;
 import org.mule.extension.db.internal.domain.type.MetadataDbTypeManager;
 import org.mule.extension.db.internal.domain.type.ResolvedDbType;

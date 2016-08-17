@@ -35,7 +35,7 @@ public class TestDbConfig {
 
   public static List<Object[]> getDerbyResource() {
     if (USE_DERBY) {
-      return singletonList(new Object[] {"integration/derby-datasource.xml", new DerbyTestDatabase()});
+      return singletonList(new Object[] {"integration/config/derby-datasource.xml", new DerbyTestDatabase()});
     } else {
       return emptyList();
     }

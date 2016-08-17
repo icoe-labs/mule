@@ -28,6 +28,10 @@ public class ParameterizedQueryDefinition extends QueryDefinition {
     return copyOf(parameters);
   }
 
+  public java.util.Optional<QueryParameter> getParameter(String name) {
+    return parameters.stream().filter(p -> p.getParamName().equals(name)).findFirst();
+  }
+
   @Override
   public QueryDefinition resolveFromTemplate() {
     ParameterizedQueryDefinition resolvedDefinition = (ParameterizedQueryDefinition) super.resolveFromTemplate();

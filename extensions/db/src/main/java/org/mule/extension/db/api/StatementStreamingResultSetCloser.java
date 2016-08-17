@@ -7,6 +7,7 @@
 
 package org.mule.extension.db.api;
 
+import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import org.mule.extension.db.internal.domain.connection.DbConnection;
 import org.mule.extension.db.internal.result.statement.AbstractStreamingResultSetCloser;
 
@@ -65,7 +66,7 @@ public class StatementStreamingResultSetCloser extends AbstractStreamingResultSe
       try {
         super.close(connection, resultSet);
       } finally {
-        if (resultSets.size() == 0) {
+        if (isEmpty(resultSets)) {
           releaseResources(connection, connectionLock);
         }
       }
@@ -113,7 +114,7 @@ public class StatementStreamingResultSetCloser extends AbstractStreamingResultSe
   protected Set<ResultSet> getConnectionResultSets(DbConnection connection, ResultSet resultSet) {
     Set<ResultSet> resultSets = connectionResultSets.get(connection);
 
-    if (!resultSets.remove(resultSet)) {
+    if (resultSets != null && !resultSets.remove(resultSet)) {
       throw new IllegalStateException("Attempting to close non tracked resultSet");
     }
     return resultSets;

@@ -18,11 +18,12 @@ import com.google.common.collect.ImmutableList;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class DefaultDbConnection implements DbConnection {
 
   private final Connection jdbcConnection;
-  private boolean streaming = false;
+  private AtomicInteger streamsCount = new AtomicInteger(0);
 
   public DefaultDbConnection(Connection jdbcConnection) {
     this.jdbcConnection = jdbcConnection;
@@ -65,6 +66,7 @@ public class DefaultDbConnection implements DbConnection {
   @Override
   public void commit() throws SQLException {
     jdbcConnection.commit();
+    abortStreaming();
   }
 
   /**
@@ -73,6 +75,7 @@ public class DefaultDbConnection implements DbConnection {
   @Override
   public void rollback() throws SQLException {
     jdbcConnection.rollback();
+    abortStreaming();
   }
 
   /**
@@ -92,16 +95,20 @@ public class DefaultDbConnection implements DbConnection {
 
   @Override
   public void beginStreaming() {
-    streaming = true;
+    streamsCount.incrementAndGet();
   }
 
   @Override
   public boolean isStreaming() {
-    return streaming;
+    return streamsCount.get() > 0;
   }
 
   @Override
   public void endStreaming() {
-    streaming = false;
+    streamsCount.decrementAndGet();
+  }
+
+  private void abortStreaming() {
+    streamsCount.set(0);
   }
 }
