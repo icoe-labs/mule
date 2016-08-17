@@ -9,8 +9,8 @@
                http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
 
     <tls:context name="globalTlsContext">
-        <tls:trust-store path="tls/trustStore" password="mulepassword"/>
-        <tls:key-store path="tls/clientKeystore" keyPassword="mulepassword" password="mulepassword" />
+        <tls:trust-store path="trustStore" password="mulepassword"/>
+        <tls:key-store path="clientKeystore" keyPassword="mulepassword" password="mulepassword" />
     </tls:context>
 
     <http:request-config name="httpProxy" host="localhost" port="${httpsPort}" protocol="HTTPS" tlsContext-ref="globalTlsContext">
