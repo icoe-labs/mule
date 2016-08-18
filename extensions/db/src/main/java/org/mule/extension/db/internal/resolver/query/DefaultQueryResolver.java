@@ -12,7 +12,6 @@ import static java.util.stream.Collectors.toList;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.mule.runtime.core.util.Preconditions.checkArgument;
 import org.mule.extension.db.api.param.InputParameter;
-import org.mule.extension.db.api.param.ParameterizedQueryDefinition;
 import org.mule.extension.db.api.param.QueryDefinition;
 import org.mule.extension.db.api.param.QueryParameter;
 import org.mule.extension.db.internal.DbConnector;
@@ -42,7 +41,6 @@ import org.mule.runtime.core.config.i18n.MessageFactory;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.ImmutableList;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -69,34 +67,29 @@ public class DefaultQueryResolver implements QueryResolver {
     return new Query(queryTemplate, resolveParams(queryDefinition, queryTemplate));
   }
 
-  private List<QueryParamValue> resolveParams(QueryDefinition definition, QueryTemplate template) {
-    if (definition instanceof ParameterizedQueryDefinition) {
-      ParameterizedQueryDefinition queryDefinition = (ParameterizedQueryDefinition) definition;
-      return template.getInputParams().stream()
-          .map(p -> {
-            final String parameterName = p.getName();
-            Optional<QueryParameter> parameterOptional = queryDefinition.getParameter(parameterName);
+  private List<QueryParamValue> resolveParams(QueryDefinition queryDefinition, QueryTemplate template) {
+    return template.getInputParams().stream()
+        .map(p -> {
+          final String parameterName = p.getName();
+          Optional<QueryParameter> parameterOptional = queryDefinition.getParameter(parameterName);
 
-            if (!parameterOptional.isPresent()) {
-              throw new IllegalArgumentException(
-                                                 format("Parameter '%s' was not bound for query '%s'", parameterName,
-                                                        definition.getSql()));
-            }
+          if (!parameterOptional.isPresent()) {
+            throw new IllegalArgumentException(
+                                               format("Parameter '%s' was not bound for query '%s'", parameterName,
+                                                      queryDefinition.getSql()));
+          }
 
-            QueryParameter parameter = parameterOptional.get();
-            if (!(parameter instanceof InputParameter)) {
-              throw new IllegalArgumentException(
-                                                 format("Parameter '%s' should be bound to an input parameter on query '%s'",
-                                                        parameterName,
-                                                        definition.getSql()));
-            }
+          QueryParameter parameter = parameterOptional.get();
+          if (!(parameter instanceof InputParameter)) {
+            throw new IllegalArgumentException(
+                                               format("Parameter '%s' should be bound to an input parameter on query '%s'",
+                                                      parameterName,
+                                                      queryDefinition.getSql()));
+          }
 
-            return new QueryParamValue(parameterName, ((InputParameter) parameter).getValue());
-          })
-          .collect(toList());
-    }
-
-    return ImmutableList.of();
+          return new QueryParamValue(parameterName, ((InputParameter) parameter).getValue());
+        })
+        .collect(toList());
   }
 
   private QueryTemplate createQueryTemplate(String sql, DbConnector connector, DbConnection connection) {

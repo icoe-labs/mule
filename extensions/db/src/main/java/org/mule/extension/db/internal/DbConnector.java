@@ -8,12 +8,10 @@ package org.mule.extension.db.internal;
 
 import org.mule.extension.db.api.StatementStreamingResultSetCloser;
 import org.mule.extension.db.api.param.CustomDataType;
-import org.mule.extension.db.api.param.DynamicQueryDefinition;
 import org.mule.extension.db.api.param.InOutQueryParameter;
 import org.mule.extension.db.api.param.InputParameter;
+import org.mule.extension.db.api.param.JdbcType;
 import org.mule.extension.db.api.param.OutputParameter;
-import org.mule.extension.db.api.param.ParameterizedQueryDefinition;
-import org.mule.extension.db.api.param.QueryDefinition;
 import org.mule.extension.db.api.param.QueryParameter;
 import org.mule.extension.db.internal.domain.connection.DbConnectionProvider;
 import org.mule.extension.db.internal.domain.connection.derby.DerbyConnectionProvider;
@@ -21,7 +19,6 @@ import org.mule.extension.db.internal.domain.type.ArrayResolvedDbType;
 import org.mule.extension.db.internal.domain.type.CompositeDbTypeManager;
 import org.mule.extension.db.internal.domain.type.DbType;
 import org.mule.extension.db.internal.domain.type.DbTypeManager;
-import org.mule.extension.db.api.param.JdbcType;
 import org.mule.extension.db.internal.domain.type.MappedStructResolvedDbType;
 import org.mule.extension.db.internal.domain.type.MetadataDbTypeManager;
 import org.mule.extension.db.internal.domain.type.ResolvedDbType;
@@ -49,7 +46,6 @@ import org.apache.commons.lang.StringUtils;
 @Extension(name = "DB Connector", description = "Connector for connecting to relation Databases through the JDBC API")
 @Operations({DmlOperations.class})
 @Providers({DbConnectionProvider.class, DerbyConnectionProvider.class})
-@SubTypeMapping(baseType = QueryDefinition.class, subTypes = {ParameterizedQueryDefinition.class, DynamicQueryDefinition.class})
 @SubTypeMapping(baseType = QueryParameter.class, subTypes = {InputParameter.class, InOutQueryParameter.class,
     OutputParameter.class})
 @Xml(namespace = "dbn")

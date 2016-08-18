@@ -6,12 +6,13 @@
  */
 package org.mule.extension.db.api.param;
 
-import static java.lang.String.format;
+import static java.util.Collections.unmodifiableList;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.mule.runtime.core.config.i18n.MessageFactory.createStaticMessage;
 import static org.mule.runtime.extension.api.introspection.parameter.ExpressionSupport.LITERAL;
 import org.mule.extension.db.internal.operation.QuerySettings;
 import org.mule.runtime.core.api.MuleRuntimeException;
+import org.mule.runtime.core.util.collection.ImmutableMapCollector;
 import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.ParameterGroup;
@@ -19,13 +20,22 @@ import org.mule.runtime.extension.api.annotation.dsl.xml.XmlHints;
 import org.mule.runtime.extension.api.annotation.param.Optional;
 import org.mule.runtime.extension.api.annotation.param.display.Text;
 
-public abstract class QueryDefinition {
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+public class QueryDefinition {
 
   @Parameter
   @Optional
   @Expression(LITERAL)
   @Text
   private String sql;
+
+  @Parameter
+  @Optional
+  private List<QueryParameter> parameters = new LinkedList<>();
 
   @ParameterGroup
   private QuerySettings settings = new QuerySettings();
@@ -42,19 +52,52 @@ public abstract class QueryDefinition {
       return this;
     }
 
-    if (!getClass().equals(template.getClass())) {
-      throw new IllegalArgumentException(
-                                         format("Invalid template specified. Cannot apply template of type '%s' on a definition of type '%s'",
-                                                template.getClass().getName(), getClass().getName()));
-    }
-
     QueryDefinition resolvedDefinition = copy();
 
     if (isBlank(resolvedDefinition.getSql())) {
       resolvedDefinition.setSql(template.getSql());
     }
 
+    resolveTemplateParameters(template, resolvedDefinition);
+
     return resolvedDefinition;
+  }
+
+  private void resolveTemplateParameters(QueryDefinition template, QueryDefinition resolvedDefinition) {
+    Map<String, Object> templateParamValues = null;
+    if (template != null) {
+      templateParamValues = template.getParameterValues();
+    }
+
+    Map<String, Object> resolvedParameterValues = new HashMap<>();
+    if (templateParamValues != null) {
+      resolvedParameterValues.putAll(templateParamValues);
+    }
+
+    resolvedParameterValues.putAll(getParameterValues());
+    resolvedDefinition.getParameters().stream()
+        .filter(p -> p instanceof InputParameter)
+        .forEach(p -> {
+          InputParameter inputParameter = (InputParameter) p;
+          final String paramName = inputParameter.getParamName();
+          if (resolvedParameterValues.containsKey(paramName)) {
+            inputParameter.setValue(resolvedParameterValues.get(paramName));
+            resolvedParameterValues.remove(paramName);
+          }
+        });
+
+    resolvedParameterValues.entrySet().stream()
+        .map(entry -> {
+          InputParameter inputParameter = new InputParameter();
+          inputParameter.setParamName(entry.getKey());
+          inputParameter.setValue(entry.getValue());
+
+          return inputParameter;
+        }).forEach(p -> resolvedDefinition.parameters.add(p));
+  }
+
+  public java.util.Optional<QueryParameter> getParameter(String name) {
+    return parameters.stream().filter(p -> p.getParamName().equals(name)).findFirst();
   }
 
   protected QueryDefinition copy() {
@@ -66,12 +109,23 @@ public abstract class QueryDefinition {
     }
 
     copy.sql = sql;
+    copy.parameters = new LinkedList<>(parameters);
 
     return copy;
   }
 
+  public Map<String, Object> getParameterValues() {
+    return parameters.stream()
+        .filter(p -> p instanceof InputParameter)
+        .collect(new ImmutableMapCollector<>(QueryParameter::getParamName, p -> ((InputParameter) p).getValue()));
+  }
+
   public String getSql() {
     return sql;
+  }
+
+  public List<QueryParameter> getParameters() {
+    return unmodifiableList(parameters);
   }
 
   public QuerySettings getSettings() {
