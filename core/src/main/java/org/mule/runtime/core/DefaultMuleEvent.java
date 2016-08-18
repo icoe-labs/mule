@@ -10,17 +10,8 @@ import static org.mule.runtime.core.api.config.MuleProperties.ENDPOINT_PROPERTY_
 import static org.mule.runtime.core.api.config.MuleProperties.MULE_CREDENTIALS_PROPERTY;
 import static org.mule.runtime.core.api.config.MuleProperties.MULE_FORCE_SYNC_PROPERTY;
 import static org.mule.runtime.core.api.config.MuleProperties.MULE_METHOD_PROPERTY;
+import static org.mule.runtime.core.message.Correlation.NO_CORRELATION;
 import static org.mule.runtime.core.util.SystemUtils.getDefaultEncoding;
-
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.Serializable;
-import java.net.URI;
-import java.nio.charset.Charset;
-import java.util.Map;
-import java.util.Set;
-
 import org.mule.runtime.api.metadata.DataType;
 import org.mule.runtime.core.api.DefaultMuleException;
 import org.mule.runtime.core.api.MessageExecutionContext;
@@ -51,6 +42,17 @@ import org.mule.runtime.core.session.DefaultMuleSession;
 import org.mule.runtime.core.transaction.TransactionCoordination;
 import org.mule.runtime.core.util.CopyOnWriteCaseInsensitiveMap;
 import org.mule.runtime.core.util.store.DeserializationPostInitialisable;
+
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
+import java.io.Serializable;
+import java.net.URI;
+import java.nio.charset.Charset;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,6 +107,7 @@ public class DefaultMuleEvent implements MuleEvent, DeserializationPostInitialis
   private FlowCallStack flowCallStack = new DefaultFlowCallStack();
   private ProcessorsTrace processorsTrace = new DefaultProcessorsTrace();
   protected boolean nonBlocking;
+  private String legacyCorrelationId;
 
   // Constructors
 
@@ -177,7 +180,7 @@ public class DefaultMuleEvent implements MuleEvent, DeserializationPostInitialis
                           MessageExchangePattern exchangePattern, FlowConstruct flowConstruct, MuleSession session,
                           Credentials credentials, OutputStream outputStream, ReplyToHandler replyToHandler) {
     this.executionContext = executionContext;
-    this.correlation = new Correlation(null, null, null);
+    this.correlation = NO_CORRELATION;
     this.id = generateEventId(flowConstruct.getMuleContext());
     this.flowConstruct = flowConstruct;
     this.session = session;
@@ -222,7 +225,7 @@ public class DefaultMuleEvent implements MuleEvent, DeserializationPostInitialis
                           MuleSession session, ReplyToHandler replyToHandler, Object replyToDestination,
                           OutputStream outputStream) {
     this.executionContext = executionContext;
-    this.correlation = new Correlation(null, null, null);
+    this.correlation = NO_CORRELATION;
     this.id = generateEventId(flowConstruct.getMuleContext());
     this.flowConstruct = flowConstruct;
     this.session = session;
@@ -368,6 +371,7 @@ public class DefaultMuleEvent implements MuleEvent, DeserializationPostInitialis
       } else {
         this.flowVariables.putAll(((DefaultMuleEvent) rewriteEvent).flowVariables);
       }
+      this.legacyCorrelationId = ((DefaultMuleEvent) rewriteEvent).getLegacyCorrelationId();
     } else {
       this.processingTime = ProcessingTime.newInstance(this);
     }
@@ -390,7 +394,7 @@ public class DefaultMuleEvent implements MuleEvent, DeserializationPostInitialis
                           MuleSession session, Credentials credentials, OutputStream outputStream,
                           boolean transacted, Object replyToDestination, ReplyToHandler replyToHandler) {
     this.executionContext = executionContext;
-    this.correlation = new Correlation(null, null, null);
+    this.correlation = NO_CORRELATION;
     this.id = generateEventId(flowConstruct.getMuleContext());
     this.flowConstruct = flowConstruct;
     this.session = session;
@@ -416,7 +420,7 @@ public class DefaultMuleEvent implements MuleEvent, DeserializationPostInitialis
                           MuleSession session, Credentials credentials, OutputStream outputStream,
                           boolean transacted, boolean synchronous, Object replyToDestination, ReplyToHandler replyToHandler) {
     this.executionContext = executionContext;
-    this.correlation = new Correlation(null, null, null);
+    this.correlation = NO_CORRELATION;
     this.id = generateEventId(flowConstruct.getMuleContext());
     this.flowConstruct = flowConstruct;
     this.session = session;
@@ -628,20 +632,16 @@ public class DefaultMuleEvent implements MuleEvent, DeserializationPostInitialis
   }
 
   @Override
+  @Deprecated // Remove once MuleEvent is immutable
   public boolean equals(Object o) {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof DefaultMuleEvent)) {
+    if (o == null || this.getClass() != o.getClass()) {
       return false;
     }
-
-    final DefaultMuleEvent event = (DefaultMuleEvent) o;
-
-    if (message != null ? !message.equals(event.message) : event.message != null) {
-      return false;
-    }
-    return id.equals(event.id);
+    DefaultMuleEvent that = (DefaultMuleEvent) o;
+    return Objects.equals(this.id, that.id);
   }
 
   @Override
@@ -901,10 +901,10 @@ public class DefaultMuleEvent implements MuleEvent, DeserializationPostInitialis
 
   @Override
   public String getCorrelationId() {
-    return getCorrelation().getId().orElse(getExecutionContext().getCorrelationId()
+    return legacyCorrelationId != null ? legacyCorrelationId : getExecutionContext().getCorrelationId()
         + (getParent() != null && !getParent().getFlowCallStack().getElements().isEmpty()
             ? ":" + getParent().getFlowCallStack().getElements().get(0).getProcessorPath() : "")
-        + getCorrelation().getSequence().map(s -> ":" + s.toString()).orElse(""));
+        + getCorrelation().getSequence().map(s -> ":" + s.toString()).orElse("");
   }
 
   /**
@@ -925,4 +925,11 @@ public class DefaultMuleEvent implements MuleEvent, DeserializationPostInitialis
     currentEvent.set(event);
   }
 
+  public void setLegacyCorrelationId(String legacyCorrelationId) {
+    this.legacyCorrelationId = legacyCorrelationId;
+  }
+
+  public String getLegacyCorrelationId() {
+    return this.legacyCorrelationId;
+  }
 }
