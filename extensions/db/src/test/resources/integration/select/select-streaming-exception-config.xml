@@ -6,25 +6,13 @@
             http://www.mulesoft.org/schema/mule/dbn http://www.mulesoft.org/schema/mule/dbn/current/mule-dbn.xsd">
 
     <flow name="selectStreamingException">
-        <dbn:select config-ref="pooledJdbcConfig" streaming="true">
-            <dbn:query>
-                <dbn:parameterized-query sql="select * from NOT_EXISTS order by ID" />
-            </dbn:query>
-        </dbn:select>
+        <dbn:select config-ref="pooledJdbcConfig" streaming="true" sql="select * from NOT_EXISTS order by ID" />
     </flow>
 
     <flow name="selectExceptionClosesPreviousResultSets">
         <transactional>
-            <dbn:select config-ref="pooledJdbcConfig" target="planets" streaming="true">
-                <dbn:query>
-                    <dbn:parameterized-query sql="select * from PLANET order by ID"/>
-                </dbn:query>
-            </dbn:select>
-            <dbn:select config-ref="pooledJdbcConfig">
-                <dbn:query>
-                    <dbn:parameterized-query sql="select * from NOT_EXISTS order by ID"/>
-                </dbn:query>
-            </dbn:select>
+            <dbn:select config-ref="pooledJdbcConfig" target="planets" streaming="true" sql="select * from PLANET order by ID" />
+            <dbn:select config-ref="pooledJdbcConfig" sql="select * from NOT_EXISTS order by ID" />
         </transactional>
         <set-payload value="#[true]"/>
         <catch-exception-strategy>

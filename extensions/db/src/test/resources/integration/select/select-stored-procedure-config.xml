@@ -6,10 +6,6 @@
             http://www.mulesoft.org/schema/mule/dbn http://www.mulesoft.org/schema/mule/dbn/current/mule-dbn.xsd">
 
     <flow name="selectStoredProcedure">
-        <dbn:select>
-            <dbn:query>
-                <dbn:parameterized-query sql="{ call getTestRecords() }" />
-            </dbn:query>
-        </dbn:select>
+        <dbn:select sql="{ call getTestRecords() }" />
     </flow>
 </mule>

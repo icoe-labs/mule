@@ -68,6 +68,7 @@ public class DmlOperations {
    */
   @MetadataScope(outputResolver = SelectOutputResolver.class)
   public InterceptingCallback<Object> select(@ParameterGroup QueryDefinition query,
+                                             @Optional QueryDefinition template,
                                              @Optional(defaultValue = "false") @Expression(NOT_SUPPORTED) boolean streaming,
                                              @ParameterGroup StatementAttributes statementAttributes,
                                              @UseConfig DbConnector connector,

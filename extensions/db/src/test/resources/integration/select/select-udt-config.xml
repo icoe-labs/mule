@@ -6,10 +6,6 @@
             http://www.mulesoft.org/schema/mule/dbn http://www.mulesoft.org/schema/mule/dbn/current/mule-dbn.xsd">
 
     <flow name="returnsUDT">
-        <dbn:select>
-            <dbn:query>
-                <dbn:parameterized-query sql="select * from REGION_MANAGERS"/>
-            </dbn:query>
-        </dbn:select>
+        <dbn:select sql="select * from REGION_MANAGERS" />
     </flow>
 </mule>

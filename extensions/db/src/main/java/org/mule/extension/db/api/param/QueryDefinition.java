@@ -9,16 +9,12 @@ package org.mule.extension.db.api.param;
 import static java.util.Collections.unmodifiableList;
 import static org.apache.commons.lang.StringUtils.isBlank;
 import static org.mule.runtime.core.config.i18n.MessageFactory.createStaticMessage;
-import static org.mule.runtime.extension.api.introspection.parameter.ExpressionSupport.LITERAL;
 import org.mule.extension.db.internal.operation.QuerySettings;
 import org.mule.runtime.core.api.MuleRuntimeException;
 import org.mule.runtime.core.util.collection.ImmutableMapCollector;
-import org.mule.runtime.extension.api.annotation.Expression;
 import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.ParameterGroup;
-import org.mule.runtime.extension.api.annotation.dsl.xml.XmlHints;
 import org.mule.runtime.extension.api.annotation.param.Optional;
-import org.mule.runtime.extension.api.annotation.param.display.Text;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -29,8 +25,7 @@ public class QueryDefinition {
 
   @Parameter
   @Optional
-  @Expression(LITERAL)
-  @Text
+  //@Text
   private String sql;
 
   @Parameter
@@ -40,9 +35,9 @@ public class QueryDefinition {
   @ParameterGroup
   private QuerySettings settings = new QuerySettings();
 
-  @Parameter
-  @Optional
-  @XmlHints(allowInlineDefinition = false)
+  //@Parameter
+  //@Optional
+  //@XmlHints(allowInlineDefinition = false)
   private QueryDefinition template;
 
   public QueryDefinition resolveFromTemplate() {

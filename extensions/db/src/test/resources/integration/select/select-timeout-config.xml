@@ -6,10 +6,6 @@
             http://www.mulesoft.org/schema/mule/dbn http://www.mulesoft.org/schema/mule/dbn/current/mule-dbn.xsd">
 
     <flow name="queryTimeout">
-        <dbn:select config-ref="delayedDbConfig" queryTimeout="1">
-            <dbn:query>
-                <dbn:parameterized-query sql="select * from PLANET" />
-            </dbn:query>
-        </dbn:select>
+        <dbn:select queryTimeout="1" sql="select * from PLANET where DELAY(#[payload]) = 1 order by ID" />
     </flow>
 </mule>

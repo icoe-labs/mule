@@ -6,40 +6,40 @@
             http://www.mulesoft.org/schema/mule/dbn http://www.mulesoft.org/schema/mule/dbn/current/mule-dbn.xsd">
 
     <flow name="select">
-        <dbn:select>
-            <dbn:sql>select * from PLANET order by ID</dbn:sql>
+        <dbn:select sql="select * from PLANET order by ID">
+            <!--<dbn:sql>select * from PLANET order by ID</dbn:sql>-->
         </dbn:select>
     </flow>
 
     <flow name="fixedParam">
-        <dbn:select>
-            <dbn:sql>SELECT * FROM PLANET WHERE POSITION = 4</dbn:sql>
+        <dbn:select sql="SELECT * FROM PLANET WHERE POSITION = 4">
+            <!--<dbn:sql>SELECT * FROM PLANET WHERE POSITION = 4</dbn:sql>-->
         </dbn:select>
     </flow>
 
     <flow name="expressionAndFixedParamMixed">
         <set-variable variableName="position" value="3"/>
-        <dbn:select>
-            <dbn:sql>SELECT * FROM PLANET WHERE POSITION = #[position] AND NAME = 'Earth'</dbn:sql>
+        <dbn:select sql="SELECT * FROM PLANET WHERE POSITION = #[position] AND NAME = 'Earth'">
+            <!--<dbn:sql>SELECT * FROM PLANET WHERE POSITION = #[position] AND NAME = 'Earth'</dbn:sql>-->
         </dbn:select>
     </flow>
 
     <flow name="dynamicQuery">
         <set-variable variableName="tableName" value="PLANET"/>
-        <dbn:select>
-            <dbn:sql>select * from #[tableName] order by ID</dbn:sql>
+        <dbn:select sql="select * from #[tableName] order by ID">
+            <!--<dbn:sql>select * from #[tableName] order by ID</dbn:sql>-->
         </dbn:select>
     </flow>
 
     <flow name="selectMaxRows">
-        <dbn:select maxRows="2">
-            <dbn:sql>select * from PLANET order by ID</dbn:sql>
+        <dbn:select maxRows="2" sql="select * from PLANET order by ID">
+            <!--<dbn:sql>select * from PLANET order by ID</dbn:sql>-->
         </dbn:select>
     </flow>
 
     <flow name="selectMaxStreamedRows">
-        <dbn:select maxRows="2">
-            <dbn:sql>select * from PLANET order by ID</dbn:sql>
+        <dbn:select maxRows="2" sql="select * from PLANET order by ID">
+            <!--<dbn:sql>select * from PLANET order by ID</dbn:sql>-->
         </dbn:select>
 
         <set-variable variableName="records" value="#[new ArrayList()]"/>
@@ -52,8 +52,8 @@
     </flow>
 
     <flow name="selectParameterizedQuery">
-        <dbn:select>
-            <dbn:sql>select * from Planet where name = :name</dbn:sql>
+        <dbn:select sql="select * from Planet where name = :name">
+            <!--<dbn:sql>select * from Planet where name = :name</dbn:sql>-->
             <dbn:parameters>
                 <dbn:in-param paramName="name" value="#[payload]"/>
             </dbn:parameters>
@@ -61,8 +61,8 @@
     </flow>
 
     <flow name="selectStreamingChunks">
-        <dbn:select streaming="true">
-            <dbn:sql>select * from PLANET order by ID</dbn:sql>
+        <dbn:select streaming="true" sql="select * from PLANET order by ID">
+            <!--<dbn:sql>select * from PLANET order by ID</dbn:sql>-->
         </dbn:select>
 
         <set-variable variableName="records" value="#[new ArrayList()]"/>
@@ -75,8 +75,8 @@
     </flow>
 
     <flow name="selectStreaming">
-        <dbn:select streaming="true">
-            <dbn:sql>select * from PLANET order by ID</dbn:sql>
+        <dbn:select streaming="true" sql="select * from PLANET order by ID">
+            <!--<dbn:sql>select * from PLANET order by ID</dbn:sql>-->
         </dbn:select>
 
         <set-variable variableName="records" value="#[new ArrayList()]"/>
@@ -87,8 +87,8 @@
     </flow>
 
     <flow name="usesAlias">
-        <dbn:select>
-            <dbn:sql>select name as planetName from PLANET order by ID</dbn:sql>
+        <dbn:select sql="select name as planetName from PLANET order by ID">
+            <!--<dbn:sql>select name as planetName from PLANET order by ID</dbn:sql>-->
         </dbn:select>
     </flow>
 
