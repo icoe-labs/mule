@@ -15,6 +15,7 @@ import org.mule.runtime.extension.api.annotation.Parameter;
 import org.mule.runtime.extension.api.annotation.ParameterGroup;
 import org.mule.runtime.extension.api.annotation.dsl.xml.XmlHints;
 import org.mule.runtime.extension.api.annotation.param.Optional;
+import org.mule.runtime.extension.api.annotation.param.display.Text;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -26,7 +27,7 @@ public class QueryDefinition {
 
   @Parameter
   @Optional
-  //@Text
+  @Text
   private String sql;
 
   @Parameter

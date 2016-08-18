@@ -7,15 +7,20 @@
 
 
     <flow name="insert">
-        <dbn:insert sql="INSERT INTO PLANET(POSITION, NAME) VALUES (777, 'Mercury')" />
+        <dbn:insert>
+            <dbn:sql>INSERT INTO PLANET(POSITION, NAME) VALUES (777, 'Mercury')</dbn:sql>
+        </dbn:insert>
     </flow>
 
     <flow name="insertDynamic">
-        <dbn:insert sql="INSERT INTO PLANET(POSITION, NAME) VALUES (777, '#[payload]')" />
+        <dbn:insert>
+            <dbn:sql>INSERT INTO PLANET(POSITION, NAME) VALUES (777, '#[payload]')</dbn:sql>
+        </dbn:insert>
     </flow>
 
     <flow name="insertParameterized">
-        <dbn:insert sql="INSERT INTO PLANET(POSITION, NAME) VALUES (777, :name)">
+        <dbn:insert>
+            <dbn:sql>INSERT INTO PLANET(POSITION, NAME) VALUES (777, :name)</dbn:sql>
             <dbn:parameters>
                 <dbn:in-param paramName="name" value="#[payload]"/>
             </dbn:parameters>

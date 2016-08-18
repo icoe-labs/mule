@@ -5,7 +5,8 @@
       xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
             http://www.mulesoft.org/schema/mule/dbn http://www.mulesoft.org/schema/mule/dbn/current/mule-dbn.xsd">
 
-    <dbn:query name="selectQuery" sql="select * from Planet where name = :name">
+    <dbn:query name="selectQuery">
+        <dbn:sql>select * from Planet where name = :name</dbn:sql>
         <dbn:parameters>
             <dbn:in-param paramName="name" value="#[payload]" type="VARCHAR"/>
         </dbn:parameters>
