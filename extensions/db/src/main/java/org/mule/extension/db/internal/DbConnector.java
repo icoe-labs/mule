@@ -12,6 +12,7 @@ import org.mule.extension.db.api.param.InOutQueryParameter;
 import org.mule.extension.db.api.param.InputParameter;
 import org.mule.extension.db.api.param.JdbcType;
 import org.mule.extension.db.api.param.OutputParameter;
+import org.mule.extension.db.api.param.QueryDefinition;
 import org.mule.extension.db.api.param.QueryParameter;
 import org.mule.extension.db.internal.domain.connection.DbConnectionProvider;
 import org.mule.extension.db.internal.domain.connection.derby.DerbyConnectionProvider;
@@ -49,7 +50,7 @@ import org.apache.commons.lang.StringUtils;
 @SubTypeMapping(baseType = QueryParameter.class, subTypes = {InputParameter.class, InOutQueryParameter.class,
     OutputParameter.class})
 @Xml(namespace = "dbn")
-@Export(classes = StatementStreamingResultSetCloser.class,
+@Export(classes = {StatementStreamingResultSetCloser.class, QueryDefinition.class},
     resources = {"/META-INF/services/org/mule/runtime/core/config/registry-bootstrap.properties"})
 public class DbConnector implements Initialisable {
 

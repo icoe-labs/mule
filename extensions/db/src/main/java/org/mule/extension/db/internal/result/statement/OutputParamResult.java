@@ -10,7 +10,7 @@ package org.mule.extension.db.internal.result.statement;
 /**
  * Represents an output parameter after a {@link java.sql.Statement} execution
  */
-public class OutputParamResult implements StatementResult {
+public class OutputParamResult implements SingleStatementResult {
 
   private final String name;
   private final Object value;

@@ -10,7 +10,7 @@ package org.mule.extension.db.internal.result.statement;
 /**
  * Represents a single result from a {@link java.sql.Statement} execution
  */
-public interface StatementResult {
+public interface SingleStatementResult {
 
   /**
    * @return name of the result. Non null

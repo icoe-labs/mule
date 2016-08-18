@@ -10,7 +10,7 @@ package org.mule.extension.db.internal.result.statement;
 /**
  * Represents an update count after a {@link java.sql.Statement} execution
  */
-public class UpdateCountResult implements StatementResult {
+public class UpdateCountResult implements SingleStatementResult {
 
   private final String name;
   private final int count;

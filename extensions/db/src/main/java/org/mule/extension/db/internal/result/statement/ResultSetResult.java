@@ -10,7 +10,7 @@ package org.mule.extension.db.internal.result.statement;
 /**
  * Represents a {@link java.sql.ResultSet} after a {@link java.sql.Statement} execution
  */
-public class ResultSetResult implements StatementResult {
+public class ResultSetResult implements SingleStatementResult {
 
   private final String name;
   private final Object resultSet;

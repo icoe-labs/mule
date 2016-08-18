@@ -40,7 +40,7 @@ public abstract class AbstractMapStatementResultHandler implements StatementResu
 
 
     while (statementResultIterator.hasNext()) {
-      StatementResult next = statementResultIterator.next();
+      SingleStatementResult next = statementResultIterator.next();
 
       result.put(next.getName(), next.getResult());
     }
