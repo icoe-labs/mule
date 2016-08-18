@@ -47,3 +47,4 @@ public class SelectNameParamOverrideTestCase extends AbstractDbIntegrationTestCa
     assertMessageContains(response, getVenusRecord());
   }
 }
+
