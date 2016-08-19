@@ -256,7 +256,7 @@ public abstract class AbstractMessageReceiver extends AbstractTransportMessageHa
       newEvent =
           new DefaultMuleEvent(executionContext, message, flowConstruct, session, null, null, ros);
     }
-    if(message.getCorrelationId() != null) {
+    if (message.getCorrelationId() != null) {
       newEvent.setLegacyCorrelationId(message.getCorrelationId());
     }
     newEvent.setCorrelation(message.getCorrelation());
@@ -266,7 +266,7 @@ public abstract class AbstractMessageReceiver extends AbstractTransportMessageHa
     if (session.getSecurityContext() != null && session.getSecurityContext().getAuthentication() != null) {
       session.getSecurityContext().getAuthentication().setEvent(event);
     }
-      return event;
+    return event;
   }
 
   protected Object getReplyToDestination(MuleMessage message) {
